@@ -1,10 +1,14 @@
-{
-    "key": "ctrl+shift+b",
-    "command": "workbench.action.tasks.runTask",
-    "args": "Build"
-},
-{
-    "key": "ctrl+shift+f",
-    "command": "workbench.action.tasks.runTask",
-    "args": "Flash"
-}
+[
+    {
+      "key": "ctrl+shift+b",
+      "command": "cmake.build",
+      "when": "cmakeTools:enabled"
+    },
+    {
+      "key": "ctrl+shift+f",
+      "command": "cmake.setDefaultTarget",
+      "args": "flash",
+      "when": "cmakeTools:enabled"
+    }
+  ]
+  
