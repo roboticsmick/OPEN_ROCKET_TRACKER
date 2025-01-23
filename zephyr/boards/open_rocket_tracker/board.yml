@@ -1,6 +1,0 @@
-board:
-  name: open_rocket_tracker
-  full_name: ORCA Open Rocket Tracker
-  vendor: ORCA
-  socs:
-    - name: stm32wle5xx
