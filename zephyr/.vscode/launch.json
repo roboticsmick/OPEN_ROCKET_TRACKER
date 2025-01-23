@@ -1,31 +1,43 @@
 {
-    "version": "0.2.0",
-    "configurations": [
-      {
-        "name": "Zephyr Debug (ST-LINK)",
-        "type": "cppdbg",
-        "request": "launch",
-        "program": "${workspaceFolder}/build/zephyr/zephyr.elf",
-        "cwd": "${workspaceFolder}",
-        "MIMode": "gdb",
-        "miDebuggerPath": "arm-none-eabi-gdb",
-        "debugServerPath": "openocd",
-        "debugServerArgs": "-f interface/stlink.cfg -f target/stm32wlx.cfg",
-        "serverStarted": "Info : Listening on port",
-        "filterStderr": true,
-        "filterStdout": true,
-        "stopAtEntry": false,
-        "targetArchitecture": "arm",
-        "serverLaunchTimeout": 10000,
-        "launchCompleteCommand": "exec-continue",
-        "setupCommands": [
-          {
-            "description": "Enable pretty-printing for gdb",
-            "text": "-enable-pretty-printing",
-            "ignoreFailures": true
-          }
-        ]
-      }
-    ]
-  }
-  
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "Zephyr Debug (ST-LINK)",
+      "type": "cppdbg",
+      "request": "launch",
+
+      // Where your final ELF is located. 
+      // Make sure it matches your chosen buildDirectory in settings.json
+      "program": "${workspaceFolder}/build/Debug/zephyr/zephyr.elf",
+      "cwd": "${workspaceFolder}",
+
+      "MIMode": "gdb",
+      "miDebuggerPath": "arm-none-eabi-gdb",
+
+      // The OpenOCD executable:
+      "debugServerPath": "openocd",
+
+      // Only point to your custom openocd.cfg if it already sources stlink.cfg:
+      "debugServerArgs": "-f ${env:OPENOCD_BOARD}",
+
+      // If your openocd.cfg does NOT source stlink.cfg, you'd do:
+      // "debugServerArgs": "-f interface/stlink.cfg -f ${env:OPENOCD_BOARD}",
+
+      "serverStarted": "Info : Listening on port",
+      "filterStderr": true,
+      "filterStdout": true,
+      "stopAtEntry": false,
+      "targetArchitecture": "arm",
+      "serverLaunchTimeout": 10000,
+      "launchCompleteCommand": "exec-continue",
+
+      "setupCommands": [
+        {
+          "description": "Enable pretty-printing for gdb",
+          "text": "-enable-pretty-printing",
+          "ignoreFailures": true
+        }
+      ]
+    }
+  ]
+}
