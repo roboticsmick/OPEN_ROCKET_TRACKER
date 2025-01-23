@@ -1,0 +1,31 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+      {
+        "name": "Zephyr Debug (ST-LINK)",
+        "type": "cppdbg",
+        "request": "launch",
+        "program": "${workspaceFolder}/build/zephyr/zephyr.elf",
+        "cwd": "${workspaceFolder}",
+        "MIMode": "gdb",
+        "miDebuggerPath": "arm-none-eabi-gdb",
+        "debugServerPath": "openocd",
+        "debugServerArgs": "-f interface/stlink.cfg -f target/stm32wlx.cfg",
+        "serverStarted": "Info : Listening on port",
+        "filterStderr": true,
+        "filterStdout": true,
+        "stopAtEntry": false,
+        "targetArchitecture": "arm",
+        "serverLaunchTimeout": 10000,
+        "launchCompleteCommand": "exec-continue",
+        "setupCommands": [
+          {
+            "description": "Enable pretty-printing for gdb",
+            "text": "-enable-pretty-printing",
+            "ignoreFailures": true
+          }
+        ]
+      }
+    ]
+  }
+  
