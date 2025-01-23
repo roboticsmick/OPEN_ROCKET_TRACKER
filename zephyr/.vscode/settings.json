@@ -1,13 +1,29 @@
 {
+  // Make sure you have the CMake Tools extension installed and that it uses Ninja
   "cmake.generator": "Ninja",
+
+  // Where to put build outputs (the ${buildType} is usually "Debug" or "Release")
   "cmake.buildDirectory": "${workspaceFolder}/build/${buildType}",
+
+  // Pass board + board root so we don't have to specify them on every command line
   "cmake.configureSettings": {
     "BOARD": "open_rocket_tracker",
     "BOARD_ROOT": "${workspaceFolder}"
   },
+
+  // Zephyr toolchain setup
   "cmake.toolchainFile": "${env:ZEPHYR_BASE}/cmake/toolchain/zephyr/zephyr.toolchain.cmake",
+
+  // Additional environment variables needed for Zephyr & OpenOCD
   "cmake.environment": {
     "ZEPHYR_BASE": "${env:ZEPHYR_BASE}",
-    "ZEPHYR_SDK_INSTALL_DIR": "${env:ZEPHYR_SDK_INSTALL_DIR}"
+    "ZEPHYR_SDK_INSTALL_DIR": "${env:ZEPHYR_SDK_INSTALL_DIR}",
+    // Tells OpenOCD which config file to use
+    "OPENOCD_BOARD": "${workspaceFolder}/boards/open_rocket_tracker/support/openocd.cfg"
   },
+
+  // (Optional) The default build target. 
+  // By default, CMake Tools will just build the "all" or main target. 
+  // If you set this to "flash", then "Build" will compile AND flash automatically.
+  //   "cmake.buildTarget": "flash"
 }
