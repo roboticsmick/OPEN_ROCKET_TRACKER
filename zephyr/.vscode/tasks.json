@@ -1,0 +1,25 @@
+{
+    "version": "2.0.0",
+    "tasks": {
+        "build": {
+            "label": "Build",
+            "type": "shell",
+            "command": "west build -b open_rocket_tracker -- -DBOARD_ROOT=${workspaceFolder}",
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            }
+        },
+        "flash": {
+            "label": "Flash",
+            "type": "shell",
+            "command": "west flash --runner openocd",
+            "dependsOn": ["build"]
+        },
+        "clean": {
+            "label": "Clean",
+            "type": "shell",
+            "command": "west build -t clean"
+        }
+    }
+}
