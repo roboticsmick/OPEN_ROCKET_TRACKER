@@ -12,9 +12,11 @@ Select the board number: Tools -> Boards part number -> Lora-E5-mini
 
 The following libraries need to be added to flash the LORA_tx program in Arduino.
 
+```cpp
 #include <RadioLib.h>
 #include <SparkFun_u-blox_GNSS_Arduino_Library.h>
 #include <MS5x.h>
+```
 
 Select the port connected to the to the STLINK debugger.
 
