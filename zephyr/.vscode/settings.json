@@ -1,0 +1,13 @@
+{
+  "cmake.generator": "Ninja",
+  "cmake.buildDirectory": "${workspaceFolder}/build/${buildType}",
+  "cmake.configureSettings": {
+    "BOARD": "open_rocket_tracker",
+    "BOARD_ROOT": "${workspaceFolder}"
+  },
+  "cmake.toolchainFile": "${env:ZEPHYR_BASE}/cmake/toolchain/zephyr/zephyr.toolchain.cmake",
+  "cmake.environment": {
+    "ZEPHYR_BASE": "${env:ZEPHYR_BASE}",
+    "ZEPHYR_SDK_INSTALL_DIR": "${env:ZEPHYR_SDK_INSTALL_DIR}"
+  },
+}
