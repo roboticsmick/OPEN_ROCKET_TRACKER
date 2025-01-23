@@ -11,5 +11,4 @@
     "ZEPHYR_SDK_INSTALL_DIR": "${env:ZEPHYR_SDK_INSTALL_DIR}",
     "OPENOCD_BOARD": "${workspaceFolder}/boards/open_rocket_tracker/support/openocd.cfg"
   }
-  // "cmake.buildTarget": "flash" // Uncomment if you want every build to also flash
 }
