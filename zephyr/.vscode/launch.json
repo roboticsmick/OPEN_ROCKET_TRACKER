@@ -5,12 +5,17 @@
       "name": "Zephyr Debug (ST-LINK)",
       "type": "cppdbg",
       "request": "launch",
+
       "program": "${workspaceFolder}/build/Debug/zephyr/zephyr.elf",
       "cwd": "${workspaceFolder}",
+
       "MIMode": "gdb",
       "miDebuggerPath": "arm-none-eabi-gdb",
+
       "debugServerPath": "openocd",
+
       "debugServerArgs": "-f ${env:OPENOCD_BOARD}",
+
       "serverStarted": "Info : Listening on port",
       "filterStderr": true,
       "filterStdout": true,
@@ -18,6 +23,7 @@
       "targetArchitecture": "arm",
       "serverLaunchTimeout": 10000,
       "launchCompleteCommand": "exec-continue",
+
       "setupCommands": [
         {
           "description": "Enable pretty-printing for gdb",
