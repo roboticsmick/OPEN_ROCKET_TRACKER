@@ -73,7 +73,7 @@ void setup() {
 
   // Radio initialisation
   Serial.print(F("[Radio] Initialising ... "));
-  int state = radio.begin(922.6, 125.0, 12, 5);
+  int state = radio.begin(915.0, 125.0, 12, 5);
   if (state == RADIOLIB_ERR_NONE) {
     Serial.println(F("success!"));
   } else {
@@ -96,7 +96,7 @@ void setup() {
 
   // Print some settings info (optional)
   Serial.println(F("Settings:"));
-  Serial.println(F("Frequency: 922.6 MHz"));
+  Serial.println(F("Frequency: 915.0 MHz"));
   Serial.println(F("Bandwidth: 125.0 kHz"));
   Serial.println(F("Spreading Factor: 12"));
   Serial.println(F("Coding Rate: 5"));
