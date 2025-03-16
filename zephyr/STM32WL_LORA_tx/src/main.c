@@ -64,9 +64,193 @@ union DataPacket {
 /* Shared data packet */
 static union DataPacket shared_packet;
 
+/* GNSS configuration functions */
+static int set_gnss_update_rate(uint8_t frequency_hz) {
+    uint16_t measRate = 1000 / frequency_hz; // Convert Hz to milliseconds
+
+    uint8_t msg[] = {
+        0xB5, 0x62, // UBX sync chars
+        0x06, 0x08, // UBX-CFG-RATE class and ID
+        0x06, 0x00, // Length (6 bytes)
+        (uint8_t)(measRate & 0xFF), (uint8_t)(measRate >> 8), // measRate
+        0x01, 0x00, // navRate
+        0x01, 0x00, // timeRef (GPS time)
+        0x00, 0x00  // Reserved
+    };
+
+    // Calculate checksum
+    uint8_t ck_a = 0, ck_b = 0;
+    for (size_t i = 2; i < sizeof(msg) - 2; i++) {
+        ck_a += msg[i];
+        ck_b += ck_a;
+    }
+    msg[sizeof(msg) - 2] = ck_a;
+    msg[sizeof(msg) - 1] = ck_b;
+
+    return i2c_write(i2c_dev, msg, sizeof(msg), GPS_I2C_ADDR);
+}
+
+static int set_gnss_airborne_4g_mode() {
+    uint8_t msg[] = {
+        0xB5, 0x62, // UBX sync chars
+        0x06, 0x24, // UBX-CFG-NAV5 class and ID
+        0x24, 0x00, // Length (36 bytes)
+        0x01, 0x00, // mask (apply dynModel)
+        0x07,       // dynModel (airborne <4g)
+        0x03,       // fixMode (auto 2D/3D)
+        0x00, 0x00, 0x00, 0x00, // fixedAlt
+        0x00, 0x00, 0x00, 0x00, // fixedAltVar
+        0x05,       // minElev
+        0x00,       // drLimit
+        0xFA, 0x00, // pDop
+        0xFA, 0x00, // tDop
+        0x64, 0x00, // pAcc
+        0x5E, 0x01, // tAcc
+        0x00,       // staticHoldThresh
+        0x3C,       // dgpsTimeOut
+        0x00,       // cnoThreshNumSVs
+        0x00,       // cnoThresh
+        0x00, 0x00, // Reserved
+        0x00, 0x00, // staticHoldMaxDist
+        0x00,       // utcStandard
+        0x00, 0x00, 0x00, 0x00, 0x00 // Reserved
+    };
+
+    // Calculate checksum
+    uint8_t ck_a = 0, ck_b = 0;
+    for (size_t i = 2; i < sizeof(msg) - 2; i++) {
+        ck_a += msg[i];
+        ck_b += ck_a;
+    }
+    msg[sizeof(msg) - 2] = ck_a;
+    msg[sizeof(msg) - 1] = ck_b;
+
+    return i2c_write(i2c_dev, msg, sizeof(msg), GPS_I2C_ADDR);
+}
+
+static int configure_nmea_messages(bool enable_gga, bool enable_gsv, bool enable_rmc) {
+    int ret = 0;
+
+    // Disable all NMEA messages first
+    const uint8_t nmea_messages[] = {
+        0xF0, 0x00, // GGA
+        0xF0, 0x01, // GLL
+        0xF0, 0x02, // GSA
+        0xF0, 0x03, // GSV
+        0xF0, 0x04, // RMC
+        0xF0, 0x05, // VTG
+        0xF0, 0x06, // GRC
+        0xF0, 0x07, // GRS
+        0xF0, 0x08, // GST
+    };
+
+    for (size_t i = 0; i < sizeof(nmea_messages) / 2; i++) {
+        uint8_t msg[] = {
+            0xB5, 0x62, // UBX sync chars
+            0x06, 0x01, // UBX-CFG-MSG class and ID
+            0x03, 0x00, // Length (3 bytes)
+            nmea_messages[2 * i],     // Message class
+            nmea_messages[2 * i + 1], // Message ID
+            0x00 // Disable (0 = off, 1 = on)
+        };
+
+        // Calculate checksum
+        uint8_t ck_a = 0, ck_b = 0;
+        for (size_t j = 2; j < sizeof(msg) - 2; j++) {
+            ck_a += msg[j];
+            ck_b += ck_a;
+        }
+        msg[sizeof(msg) - 2] = ck_a;
+        msg[sizeof(msg) - 1] = ck_b;
+
+        ret = i2c_write(i2c_dev, msg, sizeof(msg), GPS_I2C_ADDR);
+        if (ret < 0) {
+            printk("Failed to disable NMEA message 0x%02X 0x%02X\n", nmea_messages[2 * i], nmea_messages[2 * i + 1]);
+            return ret;
+        }
+    }
+
+    // Enable selected NMEA messages
+    if (enable_gga) {
+        uint8_t msg[] = {
+            0xB5, 0x62, // UBX sync chars
+            0x06, 0x01, // UBX-CFG-MSG class and ID
+            0x03, 0x00, // Length (3 bytes)
+            0xF0, 0x00, // GGA class and ID
+            0x01 // Enable (1 = on)
+        };
+
+        // Calculate checksum
+        uint8_t ck_a = 0, ck_b = 0;
+        for (size_t j = 2; j < sizeof(msg) - 2; j++) {
+            ck_a += msg[j];
+            ck_b += ck_a;
+        }
+        msg[sizeof(msg) - 2] = ck_a;
+        msg[sizeof(msg) - 1] = ck_b;
+
+        ret = i2c_write(i2c_dev, msg, sizeof(msg), GPS_I2C_ADDR);
+        if (ret < 0) {
+            printk("Failed to enable GGA message\n");
+            return ret;
+        }
+    }
+
+    if (enable_gsv) {
+        uint8_t msg[] = {
+            0xB5, 0x62, // UBX sync chars
+            0x06, 0x01, // UBX-CFG-MSG class and ID
+            0x03, 0x00, // Length (3 bytes)
+            0xF0, 0x03, // GSV class and ID
+            0x01 // Enable (1 = on)
+        };
+
+        // Calculate checksum
+        uint8_t ck_a = 0, ck_b = 0;
+        for (size_t j = 2; j < sizeof(msg) - 2; j++) {
+            ck_a += msg[j];
+            ck_b += ck_a;
+        }
+        msg[sizeof(msg) - 2] = ck_a;
+        msg[sizeof(msg) - 1] = ck_b;
+
+        ret = i2c_write(i2c_dev, msg, sizeof(msg), GPS_I2C_ADDR);
+        if (ret < 0) {
+            printk("Failed to enable GSV message\n");
+            return ret;
+        }
+    }
+
+    if (enable_rmc) {
+        uint8_t msg[] = {
+            0xB5, 0x62, // UBX sync chars
+            0x06, 0x01, // UBX-CFG-MSG class and ID
+            0x03, 0x00, // Length (3 bytes)
+            0xF0, 0x04, // RMC class and ID
+            0x01 // Enable (1 = on)
+        };
+
+        // Calculate checksum
+        uint8_t ck_a = 0, ck_b = 0;
+        for (size_t j = 2; j < sizeof(msg) - 2; j++) {
+            ck_a += msg[j];
+            ck_b += ck_a;
+        }
+        msg[sizeof(msg) - 2] = ck_a;
+        msg[sizeof(msg) - 1] = ck_b;
+
+        ret = i2c_write(i2c_dev, msg, sizeof(msg), GPS_I2C_ADDR);
+        if (ret < 0) {
+            printk("Failed to enable RMC message\n");
+            return ret;
+        }
+    }
+
+    return 0;
+}
+
 /* GNSS thread function */
-static void gnss_thread(void *arg1, void *arg2, void *arg3)
-{
+static void gnss_thread(void *arg1, void *arg2, void *arg3) {
     /* Make sure the I2C device is ready */
     if (!device_is_ready(i2c_dev)) {
         printk("I2C device not ready for GNSS\n");
@@ -371,6 +555,22 @@ int main(void)
 
     /* Initialize shared packet */
     memset(&shared_packet, 0, sizeof(shared_packet));
+
+    /* Configure GNSS module */
+    if (set_gnss_airborne_4g_mode() < 0) {
+        printk("Failed to set GNSS airborne 4g mode\n");
+        return 3;
+    }
+
+    if (set_gnss_update_rate(5) < 0) {
+        printk("Failed to set GNSS update rate\n");
+        return 4;
+    }
+
+    if (configure_nmea_messages(true, true, false) < 0) {
+        printk("Failed to configure NMEA messages\n");
+        return 5;
+    }
 
     /* Create threads */
     k_thread_create(&baro_thread_data,
