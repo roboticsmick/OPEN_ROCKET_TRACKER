@@ -1,3 +1,34 @@
-
 config BOARD_OPEN_ROCKET_TRACKER
+	bool "Open Rocket Tracker Board"
 	select SOC_STM32WLE5XX
+
+config GNSS_UPDATE_RATE_HZ
+	int "GNSS Update Rate (Hz)"
+	range 1 10
+	default 5
+	help
+	  Set the GNSS update rate in Hertz.  Valid values are 1-10.
+
+config GNSS_AIRBORNE_4G_MODE
+	bool "Enable GNSS Airborne <4g Mode"
+	default y
+	help
+	  Enable the GNSS Airborne <4g dynamic model.
+
+config GNSS_ENABLE_GGA
+	bool "Enable GGA NMEA Message"
+	default y
+	help
+	  Enable output of the GGA NMEA message.
+
+config GNSS_ENABLE_GSV
+	bool "Enable GSV NMEA Message"
+	default y
+	help
+	  Enable output of the GSV NMEA message.
+
+config GNSS_ENABLE_RMC
+	bool "Enable RMC NMEA Message"
+	default n
+	help
+	  Enable output of the RMC NMEA message.

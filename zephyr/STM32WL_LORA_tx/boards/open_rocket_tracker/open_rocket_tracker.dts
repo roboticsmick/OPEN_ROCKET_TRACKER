@@ -80,7 +80,7 @@ stm32_lp_tick_source: &lptim1 {
 	pinctrl-0 = <&i2c2_scl_pb15 &i2c2_sda_pa15>;
 	pinctrl-names = "default";
 	status = "okay";
-	clock-frequency = <I2C_BITRATE_STANDARD>;
+	clock-frequency = <I2C_BITRATE_FAST>;
 	baro@77 {
         compatible = "meas,ms5607";
         reg = <0x77>;
@@ -90,6 +90,7 @@ stm32_lp_tick_source: &lptim1 {
         compatible = "u-blox,m10";
         reg = <0x42>;
         label = "GNSS";
+		status = "okay";
     };
 };
 
