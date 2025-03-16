@@ -496,7 +496,7 @@ static void baro_thread(void *arg1, void *arg2, void *arg3) {
 static void tx_thread(void *arg1, void *arg2, void *arg3) {
     /* Configure LoRa radio */
     struct lora_modem_config config = {
-        .frequency = 922600000,
+        .frequency = 915000000,
         .bandwidth = BW_125_KHZ,
         .datarate = SF_12,
         .coding_rate = CR_4_5,
