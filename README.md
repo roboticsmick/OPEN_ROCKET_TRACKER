@@ -2,7 +2,7 @@
 
 Open source, low cost, long range (~10km) GPS tracker for rocketry. Uses a 4 layer board designed in Autodesk Fusion. Designed to fit in the smallest rockets at only 22mm x 40mm board size (plus antenna and battery you use). 
 
-No radio licence required within Australia. A second board without the GPS or barometer installed can be used as a low base station to log position data via a serial input on a laptop. 
+No radio licence required within Australia. A second board without the GPS or barometer installed can be used as a low-cost base station, powered via USB-OTG from an Android phone running the ORCA Rocket Tracker app. 
 
 ![image](https://github.com/user-attachments/assets/c7ade0d9-c0fa-4642-a546-5e5b196535c9)
 
@@ -28,17 +28,31 @@ Power systems:
 3.3V battery with reverse polarity and ESD protection.
 USB-C battery charging.
 
-## To do
+## ORCA Rocket Tracker Android App
 
-* ~~Implement in Zephyr RTOS.~~ ✓ In progress
-* Implement base station receiver in Zephyr RTOS
-* Design low cost base station
-  * SD card logger
-  * GPS
-  * Compass
-  * LCD screen to output GPS coordinates and direction to rocket position
-  * Bluetooth to connect with mobile phone to transmit GPS coordinates.
-* Develop method for plotting GPS position on mobile maps.
+ORCA Rocket Tracker is an Android ground station app for amateur rocketry. It connects via USB-OTG to a LoRa receiver to track your rocket's telemetry and GPS position in real-time.
+
+### Key Features
+
+* **Live Telemetry:** Monitors Altitude (AGL), RSSI, and Velocity.
+* **Smart Altimeter:** "Start Mission" automatically tares the altitude to 0m (Ground Level).
+* **Recovery Mapping:** Real-time flight path on OpenStreetMap with a "Go to Rocket" button.
+* **Compass Mode:** Shows distance and a directional arrow pointing directly to your rocket.
+* **Offline Capable:** Maps and tracking work without a cellular connection.
+
+### Hardware Stack
+
+* **App:** Android (Kotlin/Compose)
+* **Receiver:** LoRa base station board (USB Serial via OTG)
+* **Transmitter:** Zephyr RTOS (GPS + MS5607 Barometer)
+
+### How to Install
+
+1. Download the ORCA_rocket_tracker.apk to your Android phone.
+2. Open the file on your Android phone.
+3. If prompted, allow installation from "Unknown Sources".
+4. Connect your LoRa receiver via USB-C to your phone. 
+5. When you open the ORCA Rocket Tracker grant permission for it to connect to the USB serial.
 
 ## Programming the Wio-E5 STM32WLE5JC Module
 
