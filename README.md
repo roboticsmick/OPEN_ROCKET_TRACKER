@@ -30,7 +30,7 @@ USB-C battery charging.
 
 ## ORCA Rocket Tracker Android App
 
-ORCA Rocket Tracker is an Android ground station app for amateur rocketry. It connects via USB-OTG to a LoRa receiver to track your rocket's telemetry and GPS position in real-time.
+ORCA Rocket Tracker is an Android ground station app for amateur rocketry. It connects via USB-C to a LoRa receiver to track your rocket's telemetry and GPS position in real-time.
 
 ### Key Features
 
@@ -40,11 +40,12 @@ ORCA Rocket Tracker is an Android ground station app for amateur rocketry. It co
 * **Compass Mode:** Shows distance and a directional arrow pointing directly to your rocket.
 * **Offline Capable:** Maps and tracking work without a cellular connection.
 
+<img width="860" height="695" alt="image" src="https://github.com/user-attachments/assets/64fa057c-1e28-4184-91d7-757727cbad6b" />
+
 ### Hardware Stack
 
-* **App:** Android (Kotlin/Compose)
-* **Receiver:** LoRa base station board (USB Serial via OTG)
-* **Transmitter:** Zephyr RTOS (GPS + MS5607 Barometer)
+* **Receiver:** LoRa base station board connected via USB-C cable to Android
+* **Transmitter:** Zephyr RTOS (GPS + MS5607 Barometer) board
 
 ### How to Install
 
