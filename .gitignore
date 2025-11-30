@@ -1,0 +1,60 @@
+# Zephyr RTOS build artifacts
+build/
+twister-out*/
+
+# CMake
+CMakeCache.txt
+CMakeFiles/
+cmake_install.cmake
+*.cmake
+!CMakeLists.txt
+
+# Ninja
+.ninja_deps
+.ninja_log
+build.ninja
+
+# Compilation
+*.o
+*.a
+*.elf
+*.bin
+*.hex
+*.map
+*.lst
+*.dis
+
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.eggs/
+*.egg
+.venv/
+venv/
+
+# IDE and editor files
+.vscode/settings.json
+.vscode/launch.json
+.idea/
+*.swp
+*.swo
+*~
+.project
+.cproject
+.settings/
+
+# OS generated files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+Thumbs.db
+ehthumbs.db
+
+# Debug
+*.dSYM/
+*.su
+*.idb
+*.pdb

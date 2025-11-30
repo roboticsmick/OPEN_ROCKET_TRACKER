@@ -28,8 +28,10 @@ Power systems:
 3.3V battery with reverse polarity and ESD protection.
 USB-C battery charging.
 
-To do:
-* Implement in Zephyr RTOS.
+## To do
+
+* ~~Implement in Zephyr RTOS.~~ ✓ In progress
+* Implement base station receiver in Zephyr RTOS
 * Design low cost base station
   * SD card logger
   * GPS
@@ -69,6 +71,106 @@ The first time you program a Wio-E5 STM32WLE5JC Module you need to remove Read-o
 
 Once saved, this doesn't need to be done again.
 
+## Zephyr RTOS Firmware
+
+The Open Rocket Tracker uses [Zephyr RTOS](https://www.zephyrproject.org/) for both the rocket transmitter and base station receiver.
+
+### Prerequisites
+
+#### 1. Install Zephyr RTOS and SDK
+
+Follow the official [Zephyr Getting Started Guide](https://docs.zephyrproject.org/latest/develop/getting_started/index.html) to:
+
+1. Install host dependencies
+2. Install the Zephyr SDK
+3. Create a workspace and initialize Zephyr with `west`
+
+#### 2. Install Additional Tools
+
+After completing the Zephyr setup, install build and debug tools:
+
+```bash
+sudo apt install ninja-build openocd stlink-tools
+```
+
+#### 3. Set Up ST-LINK udev Rules (Linux)
+
+Required for non-root access to ST-LINK debuggers:
+
+```bash
+sudo tee /etc/udev/rules.d/99-stlink.rules << 'EOF'
+# ST-LINK V2
+ATTRS{idVendor}=="0483", ATTRS{idProduct}=="3748", MODE="0666", GROUP="plugdev"
+# ST-LINK V2-1
+ATTRS{idVendor}=="0483", ATTRS{idProduct}=="374b", MODE="0666", GROUP="plugdev"
+# ST-LINK V3
+ATTRS{idVendor}=="0483", ATTRS{idProduct}=="374d", MODE="0666", GROUP="plugdev"
+ATTRS{idVendor}=="0483", ATTRS{idProduct}=="374e", MODE="0666", GROUP="plugdev"
+ATTRS{idVendor}=="0483", ATTRS{idProduct}=="374f", MODE="0666", GROUP="plugdev"
+ATTRS{idVendor}=="0483", ATTRS{idProduct}=="3753", MODE="0666", GROUP="plugdev"
+ATTRS{idVendor}=="0483", ATTRS{idProduct}=="3754", MODE="0666", GROUP="plugdev"
+EOF
+
+sudo udevadm control --reload-rules
+sudo udevadm trigger
+```
+
+Add yourself to the plugdev group:
+
+```bash
+sudo usermod -aG plugdev $USER
+# Log out and back in for group changes to take effect
+```
+
+### Environment Setup
+
+Before building, activate the Zephyr environment:
+
+```bash
+source ~/zephyrproject/.venv/bin/activate
+```
+
+If `ZEPHYR_BASE` is not automatically set:
+
+```bash
+export ZEPHYR_BASE=~/zephyrproject/zephyr
+```
+
+### Building the Rocket Transmitter (STM32WL_LORA_tx)
+
+```bash
+cd zephyr/STM32WL_LORA_tx
+west build -b open_rocket_tracker -p always -- -DBOARD_ROOT=$(pwd)
+```
+
+### Building the Base Station Receiver (STM32WL_LORA_rx)
+
+```bash
+cd zephyr/STM32WL_LORA_rx
+west build -b open_rocket_tracker -p always -- -DBOARD_ROOT=$(pwd)
+```
+
+### Flashing
+
+```bash
+west flash
+```
+
+Or using OpenOCD directly:
+
+```bash
+openocd -f boards/open_rocket_tracker/support/openocd.cfg \
+  -c "program build/zephyr/zephyr.elf verify reset exit"
+```
+
+### Debugging
+
+```bash
+west debug
+```
+
+See [zephyr/STM32WL_LORA_tx/README.md](zephyr/STM32WL_LORA_tx/README.md) for more details and troubleshooting.
+
 ## Power and Charging 
 
 The board can be powered with a 3.3V battery. The 3.3V battery can be charged via a USB-C cable. 
@@ -78,6 +180,6 @@ The board can be powered with a 3.3V battery. The 3.3V battery can be charged vi
 * An orange LED will show when charging.
 * The orange LED will turn off when fully charged and connected via a USB-C cable.
 
+## Acknowledgments
 
-
-
+- [@vinn-ie](https://github.com/vinn-ie) - Initial Zephyr board configuration and build setup, plus just a great human and electronics superstar :rocket:
