@@ -171,6 +171,62 @@ west debug
 
 See [zephyr/STM32WL_LORA_tx/README.md](zephyr/STM32WL_LORA_tx/README.md) for more details and troubleshooting.
 
+## LoRa Configuration
+
+Both the transmitter and receiver can be configured by editing their `prj.conf` files. **Settings must match on both TX and RX for communication to work.**
+
+### Configuration Options
+
+Edit `zephyr/STM32WL_LORA_tx/prj.conf` or `zephyr/STM32WL_LORA_rx/prj.conf`:
+
+```conf
+# LoRa Configuration
+CONFIG_LORA_FREQUENCY=915000000      # Frequency in Hz (915 MHz for Australia/US)
+CONFIG_LORA_BANDWIDTH=125            # Bandwidth: 125, 250, or 500 kHz
+CONFIG_LORA_SPREADING_FACTOR=12      # SF6-SF12 (higher = longer range, slower)
+CONFIG_LORA_TX_POWER=14              # TX power: 2-22 dBm
+CONFIG_LORA_TX_INTERVAL_MS=2000      # TX only: interval between transmissions
+```
+
+### Spreading Factor Trade-offs
+
+| SF   | Range    | Data Rate  | Min TX Interval | Use Case                    |
+|------|----------|------------|-----------------|------------------------------|
+| SF12 | Maximum  | ~250 bps   | ~1000 ms        | Long range, low update rate  |
+| SF10 | Long     | ~980 bps   | ~500 ms         | Good range, moderate updates |
+| SF8  | Medium   | ~3125 bps  | ~250 ms         | Balanced range/speed         |
+| SF7  | Shorter  | ~5470 bps  | ~200 ms         | Fast updates (4-5 Hz)        |
+
+### Example Configurations
+
+**Maximum Range (default):**
+
+```conf
+CONFIG_LORA_SPREADING_FACTOR=12
+CONFIG_LORA_TX_INTERVAL_MS=2000
+```
+
+**Fast Updates (4-5 Hz):**
+
+```conf
+CONFIG_LORA_SPREADING_FACTOR=7
+CONFIG_LORA_TX_INTERVAL_MS=200
+```
+
+**Balanced:**
+
+```conf
+CONFIG_LORA_SPREADING_FACTOR=10
+CONFIG_LORA_TX_INTERVAL_MS=500
+```
+
+After changing settings, rebuild and reflash both TX and RX:
+
+```bash
+cd zephyr/STM32WL_LORA_tx && west build -b open_rocket_tracker -p always -- -DBOARD_ROOT=$(pwd) && west flash
+cd zephyr/STM32WL_LORA_rx && west build -b open_rocket_tracker -p always -- -DBOARD_ROOT=$(pwd) && west flash
+```
+
 ## Telemetry Data Format
 
 ### LoRa Packet Structure (25 bytes)
