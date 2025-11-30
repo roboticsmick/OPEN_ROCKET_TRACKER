@@ -171,6 +171,66 @@ west debug
 
 See [zephyr/STM32WL_LORA_tx/README.md](zephyr/STM32WL_LORA_tx/README.md) for more details and troubleshooting.
 
+## Telemetry Data Format
+
+### LoRa Packet Structure (25 bytes)
+
+| Field       | Type     | Size    | Units / Description                          |
+|-------------|----------|---------|----------------------------------------------|
+| latitude    | int32_t  | 4 bytes | Degrees × 10⁷ (e.g., -274678530 = -27.467853°) |
+| longitude   | int32_t  | 4 bytes | Degrees × 10⁷ (e.g., 1530279210 = 153.027921°) |
+| altitude    | int32_t  | 4 bytes | Meters (from GPS)                            |
+| timeMs      | uint32_t | 4 bytes | HHMMSS format (e.g., 143052 = 14:30:52 UTC)  |
+| pressure    | int32_t  | 4 bytes | Pascals (e.g., 101325 Pa = 1013.25 hPa)      |
+| temperature | int16_t  | 2 bytes | Centi-degrees Celsius (e.g., 2350 = 23.50°C) |
+| satellites  | uint8_t  | 1 byte  | Number of GPS satellites in view             |
+| status      | uint8_t  | 1 byte  | Status flags                                 |
+| checksum    | uint8_t  | 1 byte  | XOR checksum of all preceding bytes          |
+
+### Serial Output (CSV)
+
+The base station outputs CSV data at 115200 baud:
+
+```text
+sats,lat_deg,lon_deg,alt_m,time_ms,pressure_Pa,temp_C,status_hex,checksum_hex,rssi_dBm,snr_dB
+```
+
+Example:
+
+```text
+8,-27.467853,153.027921,45,143052,101325,23.50,0x01,0xA5,-85,7
+```
+
+| Column       | Type   | Description                                    |
+|--------------|--------|------------------------------------------------|
+| sats         | int    | Number of GPS satellites                       |
+| lat_deg      | float  | Latitude in decimal degrees                    |
+| lon_deg      | float  | Longitude in decimal degrees                   |
+| alt_m        | int    | GPS altitude in meters                         |
+| time_ms      | int    | UTC time as HHMMSS                             |
+| pressure_Pa  | int    | Barometric pressure in Pascals                 |
+| temp_C       | float  | Temperature in degrees Celsius                 |
+| status_hex   | hex    | Status flags                                   |
+| checksum_hex | hex    | Packet checksum                                |
+| rssi_dBm     | int    | Received signal strength (dBm)                 |
+| snr_dB       | int    | Signal-to-noise ratio (dB)                     |
+
+### Calculating Barometric Altitude (AGL)
+
+For Above Ground Level altitude, capture the pressure at launch (P₀) when starting your mission, then calculate:
+
+```text
+altitude_agl = 44330 × (1 - (P / P₀)^0.1903)
+```
+
+Where:
+
+- P = current pressure (Pa)
+- P₀ = launch pad pressure (Pa)
+- Result is in meters above launch pad
+
+This approach requires no internet connection and gives altitude relative to your launch site.
+
 ## Power and Charging 
 
 The board can be powered with a 3.3V battery. The 3.3V battery can be charged via a USB-C cable. 

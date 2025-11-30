@@ -9,9 +9,15 @@
 
 /* Configuration Constants */
 #define TX_PACKET_SIZE 25
-#define TX_INTERVAL_MS 2000
+#define TX_INTERVAL_MS CONFIG_LORA_TX_INTERVAL_MS
 #define GPS_I2C_ADDR 0x42
 #define GPS_BUFFER_SIZE 512
+
+/* LoRa Configuration from Kconfig */
+#define LORA_FREQUENCY        CONFIG_LORA_FREQUENCY
+#define LORA_BANDWIDTH_KHZ    CONFIG_LORA_BANDWIDTH
+#define LORA_SPREADING_FACTOR CONFIG_LORA_SPREADING_FACTOR
+#define LORA_TX_POWER         CONFIG_LORA_TX_POWER
 
 /* Thread Configuration */
 #define BARO_STACK_SIZE 1024
@@ -44,6 +50,44 @@ static uint8_t ring_buffer_data[RING_BUF_SIZE];
 static const struct device *lora_dev = DEVICE_DT_GET(DT_ALIAS(lora0));
 static const struct device *ms5607_dev = DEVICE_DT_GET_ANY(meas_ms5607);
 static const struct device *i2c_dev = DEVICE_DT_GET(DT_NODELABEL(i2c2));
+
+/* Map Kconfig bandwidth to Zephyr LoRa enum */
+static enum lora_signal_bandwidth get_bandwidth(void)
+{
+    switch (LORA_BANDWIDTH_KHZ) {
+    case 125:
+        return BW_125_KHZ;
+    case 250:
+        return BW_250_KHZ;
+    case 500:
+        return BW_500_KHZ;
+    default:
+        return BW_125_KHZ;
+    }
+}
+
+/* Map Kconfig spreading factor to Zephyr LoRa enum */
+static enum lora_datarate get_spreading_factor(void)
+{
+    switch (LORA_SPREADING_FACTOR) {
+    case 6:
+        return SF_6;
+    case 7:
+        return SF_7;
+    case 8:
+        return SF_8;
+    case 9:
+        return SF_9;
+    case 10:
+        return SF_10;
+    case 11:
+        return SF_11;
+    case 12:
+        return SF_12;
+    default:
+        return SF_12;
+    }
+}
 
 /* Data packet structure */
 union DataPacket {
@@ -494,14 +538,14 @@ static void baro_thread(void *arg1, void *arg2, void *arg3) {
 
 /* Transmitter thread function */
 static void tx_thread(void *arg1, void *arg2, void *arg3) {
-    /* Configure LoRa radio */
+    /* Configure LoRa radio using Kconfig values */
     struct lora_modem_config config = {
-        .frequency = 915000000,
-        .bandwidth = BW_125_KHZ,
-        .datarate = SF_12,
+        .frequency = LORA_FREQUENCY,
+        .bandwidth = get_bandwidth(),
+        .datarate = get_spreading_factor(),
         .coding_rate = CR_4_5,
         .preamble_len = 8,
-        .tx_power = 13,
+        .tx_power = LORA_TX_POWER,
         .tx = true,
         .public_network = false,
         .iq_inverted = false,
@@ -511,6 +555,10 @@ static void tx_thread(void *arg1, void *arg2, void *arg3) {
         printk("LoRa config failed\n");
         return;
     }
+
+    printk("LoRa TX configured: %u Hz, BW %u kHz, SF%u, %d dBm, interval %d ms\n",
+           LORA_FREQUENCY, LORA_BANDWIDTH_KHZ, LORA_SPREADING_FACTOR,
+           LORA_TX_POWER, TX_INTERVAL_MS);
 
     union DataPacket tx_packet;
 
