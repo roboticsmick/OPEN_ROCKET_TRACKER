@@ -317,7 +317,13 @@ Example:
 
 ### Calculating Barometric Altitude (AGL)
 
-For Above Ground Level altitude, capture the pressure at launch (P₀) when starting your mission, then calculate:
+The Android app calculates **Above Ground Level (AGL)** altitude from barometric pressure, which is far more stable and accurate than GPS altitude (±0.5m vs ±10-30m for GPS).
+
+**How it works:**
+
+1. When you press **START MISSION**, the app captures the current barometric pressure as the reference pressure (P₀)
+2. As the rocket ascends, air pressure decreases
+3. The app continuously calculates altitude using the barometric formula:
 
 ```text
 altitude_agl = 44330 × (1 - (P / P₀)^0.1903)
@@ -325,11 +331,92 @@ altitude_agl = 44330 × (1 - (P / P₀)^0.1903)
 
 Where:
 
-- P = current pressure (Pa)
-- P₀ = launch pad pressure (Pa)
-- Result is in meters above launch pad
+- P = current pressure from the rocket's MS5607 barometer (Pascals)
+- P₀ = reference pressure captured at mission start (Pascals)
+- Result is altitude in meters above your launch pad
 
-This approach requires no internet connection and gives altitude relative to your launch site.
+**Why barometric altitude?**
+
+| Method | Typical Accuracy | Drift | Best For |
+|--------|-----------------|-------|----------|
+| GPS Altitude | ±10-30m | High (especially indoors) | Absolute position |
+| Barometric (relative) | ±0.5-1m | Minimal over short periods | AGL / flight altitude |
+
+The raw pressure readings are saved in the mission CSV file, so you can recalculate altitude later if needed.
+
+### RSSI Signal Strength Reference
+
+RSSI (Received Signal Strength Indicator) shows how strong the LoRa signal is. The app validates RSSI values and displays "---" for invalid readings (e.g., during startup or signal loss).
+
+| RSSI (dBm) | Signal Strength | Notes |
+|------------|-----------------|-------|
+| -30 to -50 | Excellent | Very close range |
+| -50 to -70 | Good | Reliable connection |
+| -70 to -90 | Fair | Normal operating range |
+| -90 to -110 | Weak | May experience packet loss |
+| -110 to -120 | Very Weak | Near maximum range |
+| < -120 | Critical | At or beyond LoRa limits |
+
+**Note:** Valid LoRa RSSI is always negative. Values outside -150 to 0 dBm are filtered as errors.
+
+### Mission CSV Data
+
+The app automatically logs all telemetry data to CSV files for post-flight analysis.
+
+**CSV File Location:**
+
+The mission files are stored in the app's private storage:
+
+```text
+/data/data/com.example.orcarockettracker/files/Missions/
+```
+
+**How to access your mission data:**
+
+1. **Using Android File Manager:**
+   * Some file managers can access app data (requires granting permission)
+   * Look for: `Internal Storage > Android > data > com.example.orcarockettracker > files > Missions`
+
+2. **Using ADB (Android Debug Bridge):**
+
+   ```bash
+   # List mission files
+   adb shell ls /data/data/com.example.orcarockettracker/files/Missions/
+
+   # Pull all missions to your computer
+   adb pull /data/data/com.example.orcarockettracker/files/Missions/ ./missions/
+
+   # Pull a specific mission
+   adb pull /data/data/com.example.orcarockettracker/files/Missions/Mission_20241201_143052.csv
+   ```
+
+3. **Using Android Studio Device Explorer:**
+   * Connect phone via USB with debugging enabled
+   * View > Tool Windows > Device Explorer
+   * Navigate to: `data > data > com.example.orcarockettracker > files > Missions`
+
+**CSV File Format:**
+
+Each mission file is named `Mission_YYYYMMDD_HHMMSS.csv` and contains:
+
+| Column | Type | Description |
+|--------|------|-------------|
+| Time | long | Unix timestamp (milliseconds since epoch) |
+| Lat | float | Latitude in decimal degrees |
+| Lon | float | Longitude in decimal degrees |
+| GPS_Alt | float | GPS altitude in meters (backup reference) |
+| Baro_Alt_AGL | float | Barometric altitude AGL in meters (primary) |
+| Pressure_Pa | float | Raw pressure in Pascals |
+| RSSI | int | Signal strength in dBm (null if invalid) |
+
+Example CSV content:
+
+```csv
+Time,Lat,Lon,GPS_Alt,Baro_Alt_AGL,Pressure_Pa,RSSI
+1701423052000,-27.467853,153.027921,45,0.0,101325.0,-85
+1701423054000,-27.467855,153.027919,46,12.5,101200.0,-87
+1701423056000,-27.467860,153.027915,58,45.2,100850.0,-89
+```
 
 ## Power and Charging 
 
