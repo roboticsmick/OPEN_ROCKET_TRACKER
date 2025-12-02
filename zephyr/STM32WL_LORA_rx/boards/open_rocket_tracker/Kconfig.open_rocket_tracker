@@ -36,3 +36,10 @@ config LORA_TX_POWER
 	help
 	  LoRa transmit power in dBm.
 	  Higher power = longer range but more power consumption.
+
+config RF_ENABLE_LED
+	bool "Enable RF Activity LED"
+	default y
+	help
+	  Enable LED indication for RF activity.
+	  LED flashes when transmitting or receiving packets.

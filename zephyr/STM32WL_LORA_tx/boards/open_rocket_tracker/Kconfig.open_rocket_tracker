@@ -77,3 +77,10 @@ config GNSS_ENABLE_RMC
 	default n
 	help
 	  Enable output of the RMC NMEA message.
+
+config RF_ENABLE_LED
+	bool "Enable RF Activity LED"
+	default y
+	help
+	  Enable LED indication for RF activity.
+	  LED flashes when transmitting or receiving packets.

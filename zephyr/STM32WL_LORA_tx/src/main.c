@@ -3,6 +3,7 @@
 #include <zephyr/drivers/lora.h>
 #include <zephyr/drivers/sensor.h>
 #include <zephyr/drivers/i2c.h>
+#include <zephyr/drivers/gpio.h>
 #include <zephyr/sys/printk.h>
 #include <string.h>
 #include <zephyr/sys/ring_buffer.h>
@@ -50,6 +51,10 @@ static uint8_t ring_buffer_data[RING_BUF_SIZE];
 static const struct device *lora_dev = DEVICE_DT_GET(DT_ALIAS(lora0));
 static const struct device *ms5607_dev = DEVICE_DT_GET_ANY(meas_ms5607);
 static const struct device *i2c_dev = DEVICE_DT_GET(DT_NODELABEL(i2c2));
+
+#if IS_ENABLED(CONFIG_RF_ENABLE_LED)
+static const struct gpio_dt_spec led = GPIO_DT_SPEC_GET(DT_ALIAS(led0), gpios);
+#endif
 
 /* Map Kconfig bandwidth to Zephyr LoRa enum */
 static enum lora_signal_bandwidth get_bandwidth(void)
@@ -575,12 +580,23 @@ static void tx_thread(void *arg1, void *arg2, void *arg3) {
         tx_packet.fields.checksum = compute_checksum(tx_packet.buffer, 
                                                    TX_PACKET_SIZE - 1);
 
+        /* Turn on LED before transmit */
+#if IS_ENABLED(CONFIG_RF_ENABLE_LED)
+        gpio_pin_set_dt(&led, 1);
+#endif
+
         /* Transmit packet */
         int ret = lora_send(lora_dev, tx_packet.buffer, TX_PACKET_SIZE);
+
+        /* Turn off LED after transmit */
+#if IS_ENABLED(CONFIG_RF_ENABLE_LED)
+        gpio_pin_set_dt(&led, 0);
+#endif
+
         if (ret < 0) {
             printk("LoRa send failed: %d\n", ret);
         } else {
-            printk("LoRa packet sent (CHKSUM=0x%02X)\n", 
+            printk("LoRa packet sent (CHKSUM=0x%02X)\n",
                    tx_packet.fields.checksum);
         }
 
@@ -600,6 +616,16 @@ int main(void)
         printk("MS5607 sensor not ready\n");
         return 2;
     }
+
+#if IS_ENABLED(CONFIG_RF_ENABLE_LED)
+    /* Initialize LED */
+    if (!gpio_is_ready_dt(&led)) {
+        printk("LED device not ready\n");
+        return 3;
+    }
+    gpio_pin_configure_dt(&led, GPIO_OUTPUT_INACTIVE);
+    printk("RF LED enabled on PA0\n");
+#endif
 
     /* Initialize shared packet */
     memset(&shared_packet, 0, sizeof(shared_packet));

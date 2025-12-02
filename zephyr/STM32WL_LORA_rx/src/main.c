@@ -1,6 +1,7 @@
 #include <zephyr/kernel.h>
 #include <zephyr/device.h>
 #include <zephyr/drivers/lora.h>
+#include <zephyr/drivers/gpio.h>
 #include <zephyr/sys/printk.h>
 #include <string.h>
 
@@ -15,6 +16,10 @@
 
 /* Device pointer */
 static const struct device *lora_dev = DEVICE_DT_GET(DT_ALIAS(lora0));
+
+#if IS_ENABLED(CONFIG_RF_ENABLE_LED)
+static const struct gpio_dt_spec led = GPIO_DT_SPEC_GET(DT_ALIAS(led0), gpios);
+#endif
 
 /* Data packet structure - must match transmitter */
 union DataPacket {
@@ -97,6 +102,16 @@ int main(void)
         return 1;
     }
 
+#if IS_ENABLED(CONFIG_RF_ENABLE_LED)
+    /* Initialize LED */
+    if (!gpio_is_ready_dt(&led)) {
+        printk("LED device not ready\n");
+        return 1;
+    }
+    gpio_pin_configure_dt(&led, GPIO_OUTPUT_INACTIVE);
+    printk("RF LED enabled on PA0\n");
+#endif
+
     /* Configure LoRa radio for receive */
     struct lora_modem_config config = {
         .frequency = LORA_FREQUENCY,
@@ -153,6 +168,11 @@ int main(void)
             continue;
         }
 
+#if IS_ENABLED(CONFIG_RF_ENABLE_LED)
+        /* Flash LED on valid packet received */
+        gpio_pin_set_dt(&led, 1);
+#endif
+
         /* Output CSV format matching Arduino receiver */
         /* sats,lat_deg,lon_deg,alt_m,time,pressure_Pa,temp_C,status,chksum,rssi_dBm,snr_dB */
 
@@ -181,6 +201,11 @@ int main(void)
                rx_packet.fields.checksum,
                rssi,
                snr);
+
+#if IS_ENABLED(CONFIG_RF_ENABLE_LED)
+        /* Turn off LED after processing */
+        gpio_pin_set_dt(&led, 0);
+#endif
     }
 
     return 0;

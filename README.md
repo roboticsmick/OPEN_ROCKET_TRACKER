@@ -197,8 +197,8 @@ west build -b open_rocket_tracker -p always -- -DBOARD_ROOT=$(pwd)
 ### Flashing
 
 ```bash
-west flash
-```
+ west flash --runner openocd
+ ```
 
 Or using OpenOCD directly:
 
@@ -210,7 +210,7 @@ openocd -f boards/open_rocket_tracker/support/openocd.cfg \
 ### Debugging
 
 ```bash
-west debug
+west debug --runner openocd
 ```
 
 See [zephyr/STM32WL_LORA_tx/README.md](zephyr/STM32WL_LORA_tx/README.md) for more details and troubleshooting.
@@ -286,6 +286,35 @@ cd zephyr/STM32WL_LORA_rx && west build -b open_rocket_tracker -p always -- -DBO
 | satellites  | uint8_t  | 1 byte  | Number of GPS satellites in view             |
 | status      | uint8_t  | 1 byte  | Status flags                                 |
 | checksum    | uint8_t  | 1 byte  | XOR checksum of all preceding bytes          |
+
+### Checksum Validation
+
+The packet uses a simple XOR checksum for error detection. The transmitter calculates the checksum by XORing all bytes in the packet (bytes 0-23), then appends it as byte 24.
+
+**How it works:**
+
+```c
+// Transmitter: Calculate checksum
+uint8_t checksum = 0;
+for (int i = 0; i < 24; i++) {
+    checksum ^= packet[i];
+}
+packet[24] = checksum;
+
+// Receiver: Verify checksum
+uint8_t calculated = 0;
+for (int i = 0; i < 24; i++) {
+    calculated ^= packet[i];
+}
+bool valid = (calculated == packet[24]);
+```
+
+**Debugging tips:**
+
+- If checksum fails, check that TX and RX packet structures match exactly (same field order and sizes)
+- Ensure both TX and RX use the same LoRa settings (frequency, bandwidth, spreading factor)
+- A valid packet will show data in CSV format; invalid packets print `"Invalid checksum, packet discarded"`
+- The checksum is included in the CSV output as `chksum` (hex) for verification
 
 ### Serial Output (CSV)
 
