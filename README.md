@@ -138,16 +138,45 @@ sudo usermod -aG plugdev $USER
 
 ### Environment Setup
 
-Before building, activate the Zephyr environment:
+Before building, you need to activate the Zephyr virtual environment and set `ZEPHYR_BASE`.
+
+**Important:** The paths below depend on where you installed Zephyr. Replace `/path/to/zephyrproject` with your actual Zephyr workspace location (e.g., `~/zephyrproject`, `/media/user/drive/zephyrproject`, etc.).
+
+#### Manual Setup (each terminal session)
 
 ```bash
-source ~/zephyrproject/.venv/bin/activate
+# Activate the Python virtual environment
+source /path/to/zephyrproject/.venv/bin/activate
+
+# Set ZEPHYR_BASE to the zephyr directory inside your workspace
+export ZEPHYR_BASE=/path/to/zephyrproject/zephyr
 ```
 
-If `ZEPHYR_BASE` is not automatically set:
+#### Automatic Setup (recommended)
+
+Add these lines to your `~/.bashrc` to automatically configure the environment:
 
 ```bash
-export ZEPHYR_BASE=~/zephyrproject/zephyr
+# Zephyr RTOS environment (adjust path to your installation)
+export ZEPHYR_BASE=/path/to/zephyrproject/zephyr
+alias zephyr-env='source /path/to/zephyrproject/.venv/bin/activate'
+```
+
+Then reload your shell:
+
+```bash
+source ~/.bashrc
+```
+
+Now you can simply run `zephyr-env` to activate the environment before building.
+
+#### Verify Setup
+
+Check that your environment is configured correctly:
+
+```bash
+echo $ZEPHYR_BASE    # Should print your zephyr directory path
+west --version       # Should show west version (requires venv activated)
 ```
 
 ### Building the Rocket Transmitter (STM32WL_LORA_tx)
