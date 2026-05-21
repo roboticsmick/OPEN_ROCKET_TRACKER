@@ -459,3 +459,9 @@ The board can be powered with a 3.3V battery. The 3.3V battery can be charged vi
 ## Acknowledgments
 
 - [@vinn-ie](https://github.com/vinn-ie) - Initial Zephyr board configuration and build setup, plus just a great human and electronics superstar :rocket:
+
+## Sharing is caring :helicopter:
+
+Use as you like for your personal use. If you're rich, feel free to buy me a coffee or a HOTA 4-channel battery charger ❤️
+
+<a href="https://www.buymeacoffee.com/orcaengineer" target="_blank"><img src="https://cdn.buymeacoffee.com/buttons/v2/default-yellow.png" alt="Buy Me A Coffee" style="height: 60px !important;width: 217px !important;" ></a>
